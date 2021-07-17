@@ -10,7 +10,7 @@ const fsDetailsMethods = [ 'isDirectory', 'isFile'];
 
 export default new Vuex.Store({
   state: {
-    workingPath : process.env.workingPath || "/home/jac/tensorflow/data",
+    workingPath : process.env.workingPath || "/home/zeppelin/tensorTest/data/",
     workingPathContent: [],
     readWorkingPathStatus: ""
   },

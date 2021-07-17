@@ -25,6 +25,6 @@ new Vue({
 
   created: function () {
     // `this` points to the vm instance
-    console.log("hello poeste")
+
   }
 }).$mount('#app')

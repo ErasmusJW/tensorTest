@@ -48,8 +48,6 @@ export default {
   },
   methods:{
     updatePath: function(newPath){
-      console.log("home got new path")
-      console.log(newPath);
       this.$store.dispatch("setWorkingPath",{value:newPath})
 
 

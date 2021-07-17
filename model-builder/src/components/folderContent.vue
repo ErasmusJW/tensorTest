@@ -55,7 +55,7 @@ export default {
   },
   methods:{
     loadFile : function(index){
-      console.log(index)
+
       this.$router.push({ path: `newSanitise/${index}` })
 
     }

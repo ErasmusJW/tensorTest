@@ -5,31 +5,51 @@
 
     <div v-if="meta.isNumber" class="text-start">
         <br>
-        <b>stats:</b> {{JSON.stringify(meta.stats, null, 2)}}
+          <b>stats:</b> {{JSON.stringify(meta.stats, null, 2)}}
         <br>
-
         <br>
         <div class="mb-3 row">
-          <label for="normalMax" class="col-sm-2 col-form-label">Normalise Max</label>
+          <label for="max" class="col-sm-2 col-form-label">Normalise Max</label>
           <div class="col-sm-8">
-            <input type="number"  class="form-control" id="normalMax" v-model="normalMax">
+            <input type="number"  class="form-control" id="max" v-model="normalise.max">
           </div>
-          <div id="normalMaxHelp" class="form-text">
+          <div id="mlp" class="form-text">
              Values higher than the max will be discarded from the dataset
           </div>
         </div>
         <div class="mb-3 row">
-          <label for="normalMin" class="col-sm-2 col-form-label">Normalise Min</label>
+          <label for="min" class="col-sm-2 col-form-label">Normalise Min</label>
           <div class="col-sm-8">
-            <input type="number"  class="form-control" id="normalMin" v-model="normalMin">
+            <input type="number"  class="form-control" id="min" v-model="normalise.min">
           </div>
-          <div id="normalMinHelp" class="form-text">
+          <div id="minHelp" class="form-text">
              Values lower than the min will be discarded from the dataset
           </div>
         </div>
 
     </div>
-
+    <div v-else class="text-start">
+      
+      <div id="mlp" class="form-text">
+        Select how the model will treat text values, "discrete" means each value gets its own input, "normalise" will convert each text entry between a value of 0 to 1 adding only one input to the model
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1" value="discrete" v-model="normalise.stringType">
+        <label class="form-check-label" for="flexRadioDefault1">
+          Discrete
+        </label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2" value="normalise" v-model="normalise.stringType">
+        <label class="form-check-label" for="flexRadioDefault2">
+          Normalise
+        </label>
+      </div>
+    </div>
+    <br>
+    <button type="button" class="btn btn-primary" @click="$emit('save',normalise)">Save </button>
+    <button type="button" class="btn btn-secondary" @click='$emit("cancel")'>Cancell</button>
+   
   </div>
 
 </template>
@@ -55,16 +75,21 @@ export default {
   created: function () {
     if(this.meta.isNumber) //christ should realy have 2 components
     {
-      this.normalMax = this.meta.stats.max
-      this.normalMin = this.meta.stats.min
+      
+      this.normalise.max = this.meta.stats.max
+      this.normalise.min = this.meta.stats.min
+    }else {
+      this.normalise.stringType = "normalise"
     }
 
 
   },
   data: function(){
     return {
-        normalMax : 0,
-        normalMin : 0
+      normalise : {
+        max : 0,
+        min : 0
+      }
     }
 
   },
@@ -76,9 +101,12 @@ export default {
       Object.assign(this.selectable,this.selectable)
       this.$forceUpdate(); //christ this is a hackey mess
       this.myModal.show()
-      console.log(temp)
-    }
 
+    },
+    cancellAddInput: function(){
+
+      this.$emit("cancel")
+    }
 
 
   },
@@ -92,5 +120,10 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+
+.btn{
+  padding-left: 15px;
+  margin-left: 15px;
+}
 
 </style>
