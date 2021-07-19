@@ -5,12 +5,18 @@
 
      </select-folder>
      <br><br>
+     <h3>Data</h3>
     <folder-content>
 
     </folder-content>
 
+    <h3> Parsers </h3>
+    <folder-content-parser>
+
+    </folder-content-parser>
 
 
+    <button @click="updatePath(workingPath)" class="btn btn-primary">Refresh</button>
   </div>
 
 
@@ -49,9 +55,6 @@ export default {
   methods:{
     updatePath: function(newPath){
       this.$store.dispatch("setWorkingPath",{value:newPath})
-
-
-
     }
   },
   computed: mapState({

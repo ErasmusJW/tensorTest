@@ -9,18 +9,18 @@
       <span class="visually-hidden">Loading...</span>
     </div>
     <div v-else class="row">
-      
+
         <div class="mb-3 row">
           <label for="parserName" class="col-sm-2 col-form-label">Parser Name</label>
           <div class="col-sm-4">
             <input type="text"  class="form-control" id="parserName" v-model="parserName">
           </div>
-          <div class="col"> 
+          <div class="col">
             <button class="btn btn-success"  @click="saveParser"> save </button>
           </div>
         </div>
 
-      <div class="row"> 
+      <div class="row">
         <h4> Available Fields </h4> <br> <br>
         <div class="table-container">
 
@@ -59,7 +59,7 @@
             </tbody>
           </table>
 
-          
+
         </div>
       </div>
       <div class="row" style="height : 50px">
@@ -67,7 +67,7 @@
 
 
 
-      <div class="row"> 
+      <div class="row">
 
         <h4> Selected Inputs </h4> <br> <br>
         <div class="table-container">
@@ -107,7 +107,7 @@
             </tbody>
           </table>
 
-          
+
         </div>
       </div>
 
@@ -115,7 +115,7 @@
       <div class="row" style="height : 50px">
       </div>
 
-      <div class="row"> 
+      <div class="row">
 
         <h4> Selected Outputs </h4> <br> <br>
         <div class="table-container">
@@ -125,7 +125,7 @@
               <tr>
                 <th scope="col">Field Name</th>
                 <th> Actions </th>
-   
+
               </tr>
             </thead>
             <tbody>
@@ -140,7 +140,7 @@
             </tbody>
           </table>
 
-          
+
         </div>
       </div>
 
@@ -203,7 +203,7 @@ export default {
     this.fileReader.on("done",(val)=>{
       this.status = `Done reading ${val} Lines !`;
      // this.data = this.fileReader.data;
-      
+
       this.headings = this.fileReader.headings;
       let temp = this.fileReader.meta
 
@@ -233,7 +233,7 @@ export default {
       showInput : false,
       inputBeingSelected : null,
       parserName: "Some name"
-      
+
     }
 
   },
@@ -265,7 +265,7 @@ export default {
       temp.normalise = normalise
       this.inputs[temp.name] = temp
       delete this.selectable[temp.name];
-  
+
       this.myModal.hide()
       this.showInput = false;
       this.inputBeingSelected = null;
@@ -295,13 +295,16 @@ export default {
       }
       try{
         let dataParser = new parseData( {
-          data : this.fileReader.data, 
-          meta:this.meta, 
-          inputs:this.inputs, 
-          outputs:this.outputs, 
-          path:this.workingPath, 
-          name:this.parserName, 
+          data : this.fileReader.data,
+          meta:this.meta,
+          inputs:this.inputs,
+          outputs:this.outputs,
+          path:this.workingPath,
+          name:this.parserName,
           filename: `${this.files[this.$route.params.id].name}`
+          })
+          dataParser.on("parseUpdate",(data)=>{
+            this.status = `Parser valid: ${data[0]} invalid: ${data[1]} `
           })
           await dataParser.saveParser();
           this.status = "Parser Saved, saving normalised data"
@@ -333,7 +336,7 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.table-container { 
+.table-container {
   max-height: 400px;
   overflow-y: scroll;
 }

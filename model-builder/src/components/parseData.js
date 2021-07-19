@@ -14,7 +14,7 @@ class NumberNormaliser{
         this.i = 0;
         this.data = data;
         this.normaleRange = this.parseRules.normalise.max - this.parseRules.normalise.min
-        
+
     }
     getHeader(){
         return [this.parseRules.name];
@@ -29,9 +29,16 @@ class NumberNormaliser{
             ++this.i;
             return [false];
         }
+        let UnormalisedData = nextValue
         let normalisedValue = (nextValue - this.parseRules.normalise.min) / this.normaleRange;
         ++this.i;
-        return [true,[normalisedValue]]
+        return [[true,[UnormalisedData]],[normalisedValue]]
+    }
+    deNormaliseFunc(value){
+        let temp = value*this.normaleRange
+        let temp2 = temp +  this.parseRules.normalise.min
+        return [true,(value*this.normaleRange) +  this.parseRules.normalise.min]
+
     }
 
 }
@@ -42,28 +49,56 @@ class StringNormaliser{
         this.data = data;
         this.validValues = Object.keys(this.parseRules.stats.values)
         this.normaliseFunc = (this.parseRules.normalise.stringType === 'discrete') ? this.#normaliseDiscrete : this.#normaliseNormalise
+        this.deNormaliseFunc = (this.parseRules.normalise.stringType === 'discrete') ? this.#denormaliseDiscrete : this.#denormaliseNomalsie
     }
     getHeader(){
         if(this.parseRules.normalise.stringType === 'discrete')
             return this.validValues
         return [this.parseRules.name]
     }
+
     #normaliseNormalise(value) {
         return [this.validValues.indexOf(value)/this.validValues.length]
-        
+
     }
+    #denormaliseNomalsie(value){
+        let index = Math.round(value * this.validValues.length)
+        if(index>this.validValues.length || index < 0)
+        {
+            debugger;
+            return [false]
+
+        }
+
+        return [true,this.validValues[index]]
+    }
+
+    #denormaliseDiscrete(value){
+        let index = value[0].indexOf(1)
+        if(index<0 || index > this.validValues.length)
+        {
+            debugger;
+            return [false]
+
+        }
+        return [true,this.validValues[index]]
+    }
+
+
     #normaliseDiscrete(value) {
 
         let returnArray =  new Array(this.validValues.length).fill(0);
         returnArray[this.validValues.indexOf(value)] = 1;
         return [returnArray]
-         
+
      }
+
+
     getNextValue(){
         if(this.i > this.data.length)
          return [false];
 
-        //abstract this out instead of check on each value 
+        //abstract this out instead of check on each value
         let nextValue = this.data[this.i]
         let valid = this.validValues.indexOf(nextValue) > -1;
         if(!valid)
@@ -71,12 +106,14 @@ class StringNormaliser{
             ++this.i;
             return [false];
         }
+        let UnormalisedData = nextValue
         let normalisedValue = this.normaliseFunc(nextValue)
+
         ++this.i;
-        return [true,normalisedValue]
+        return [[true,[UnormalisedData]],normalisedValue]
 
     }
-       
+
 
 }
 
@@ -85,19 +122,24 @@ class OutputNormaliser{
         this.parseRules = parseRules;
         this.i = 0;
         this.data = data;
-        
+
     }
     getHeader(){
-        return [this.parseRules.name] 
+        return [this.parseRules.name]
     }
     getNextValue(){
         if(this.i > this.data.length)
          return [false];
         let nextValue = this.data[this.i]
-        return [true,[nextValue]]
+        ++this.i
+        return [[true,[nextValue]],[nextValue]]
 
     }
-    
+    deNormaliseFunc(value){
+        return [true,value]
+
+    }
+
 
 
 }
@@ -144,7 +186,7 @@ class parseData extends EventEmitter {
 
         }
 
-        
+
 
 
     }
@@ -170,14 +212,15 @@ class parseData extends EventEmitter {
                 parsers.push(new NumberNormaliser(parseObject,this.data[item]))
             }else{
                 parsers.push(new StringNormaliser(parseObject,this.data[item]))
-            }         
+            }
         }
         for(let item in this.outputs)
         {
             let parseObject = this.outputs[item]
             parsers.push(new OutputNormaliser(parseObject,this.data[item]))
         }
-        let writeStream = fsNormal.createWriteStream(`${this.path}${normaliseDataFolder}/test.csv`,{flags : 'w'});
+        let writeStream = fsNormal.createWriteStream(`${this.path}${normaliseDataFolder}/${this.name}.csv`,{flags : 'w'});
+        //let UnNormalisedTestStream = fsNormal.createWriteStream(`${this.path}${normaliseDataFolder}/unNormal.csv`,{flags : 'w'});
         let headers = [];
         for(let parser of parsers)
         {
@@ -187,6 +230,8 @@ class parseData extends EventEmitter {
         for(let i = 0 ;  i < numberElements ; i++ )
         {
             let valueRow = []
+            let originalValRow = []
+            // let reconstructedRow = [];
             let rowValid = true;
             for(let parser of parsers)
             {
@@ -194,23 +239,33 @@ class parseData extends EventEmitter {
                 if(!value[0] || !rowValid)
                 {
                     rowValid = false;
-                    continue  
+                    continue
                 }
                 valueRow.push(...value[1])
+                originalValRow.push(...value[0][1])
+                // reconstructedRow.push(parser.deNormaliseFunc(value[1])[1])
 
-                //headers.push(...parser.getHeader())
             }
             if(!rowValid){
                 ++invalidCount;
                 continue
             }
             validCount++;
-            writeStream.write("\n\r")
+            writeStream.write("\n")
             writeStream.write(valueRow.join(','))
 
+            // UnNormalisedTestStream.write("\n")
+            // UnNormalisedTestStream.write(originalValRow.join(','))
+            // UnNormalisedTestStream.write("\n")
+            // UnNormalisedTestStream.write(reconstructedRow.join(','))
+
+            if(i%10===0)
+            {
+                this.emit("parseUpdate",[validCount,invalidCount])
+            }
 
         }
-
+        this.emit("parseDone",[validCount,invalidCount])
     }
 
 

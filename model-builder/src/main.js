@@ -4,10 +4,12 @@ import store from './store'
 
 import selectFolder from "./components/selectFolder.vue"
 import folderContent from "./components/folderContent.vue"
+import folderContent2 from "./components/folderContent2.vue"
 import configInput from "./components/configInput.vue"
 import router from './router'
 
 Vue.component('selectFolder', selectFolder)
+Vue.component('folder-content-parser', folderContent2)
 Vue.component('folder-content', folderContent)
 Vue.component('config-input', configInput)
 

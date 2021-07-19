@@ -29,7 +29,7 @@
 
     </div>
     <div v-else class="text-start">
-      
+
       <div id="mlp" class="form-text">
         Select how the model will treat text values, "discrete" means each value gets its own input, "normalise" will convert each text entry between a value of 0 to 1 adding only one input to the model
       </div>
@@ -47,9 +47,9 @@
       </div>
     </div>
     <br>
-    <button type="button" class="btn btn-primary" @click="$emit('save',normalise)">Save </button>
+    <button type="button" class="btn btn-primary" @click="save()">Save </button>
     <button type="button" class="btn btn-secondary" @click='$emit("cancel")'>Cancell</button>
-   
+
   </div>
 
 </template>
@@ -75,7 +75,7 @@ export default {
   created: function () {
     if(this.meta.isNumber) //christ should realy have 2 components
     {
-      
+
       this.normalise.max = this.meta.stats.max
       this.normalise.min = this.meta.stats.min
     }else {
@@ -94,13 +94,10 @@ export default {
 
   },
   methods:{
-    selsctInput : function(metaIndex){
-      let temp = this.meta[metaIndex];
-      this.inputs[metaIndex] = temp
-      delete this.selectable[metaIndex];
-      Object.assign(this.selectable,this.selectable)
-      this.$forceUpdate(); //christ this is a hackey mess
-      this.myModal.show()
+    save : function(){
+      this.normalise.max = parseInt(this.normalise.max)
+      this.normalise.min = parseInt(this.normalise.min)
+      this.$emit('save',this.normalise)
 
     },
     cancellAddInput: function(){

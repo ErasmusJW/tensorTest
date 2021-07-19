@@ -83,7 +83,7 @@ class readFile extends EventEmitter {
                     this.data[this.headings[headingIndex]].push(value)
                     if(meta.isNumber && value && !Number.isNaN(value)){
                         meta.stats.min = Math.min(meta.stats.min,value),
-                        meta.stats.max = Math.max(meta.stats.min,value)
+                        meta.stats.max = Math.max(meta.stats.max,value)
                     }else if(!meta.isNumber){
                         if(meta.stats.values[value])
                             meta.stats.values[value] = meta.stats.values[value] +1;

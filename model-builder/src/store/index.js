@@ -8,20 +8,49 @@ import md5File from 'md5-file'
 Vue.use(Vuex)
 const fsDetailsMethods = [ 'isDirectory', 'isFile'];
 
+async function readFolderContents(path)
+{
+  let content =  await fs.readdir( path,{withFileTypes :true})
+  content = content.map(d => {
+    let cur = { name: d.name }
+    for (let method of fsDetailsMethods) cur[method] = d[method]()
+    return cur
+  })
+  return content
+}
+
+async function fileStat(data,path)
+{
+  for(let file of data)
+  {
+    if(file.isFile){
+      file.hash = await md5File(`${path}/${file.name}`)
+      file.size = (await (await fs.stat(`${path}/${file.name}`)).size / (1024*1024)).toFixed(3)
+    }
+  }
+  return data;
+}
+
 export default new Vuex.Store({
   state: {
-    workingPath : process.env.workingPath || "/home/zeppelin/tensorTest/data/",
+    workingPath : process.env.workingPath || "/home/jac/tensorTest/data/",
     workingPathContent: [],
-    readWorkingPathStatus: ""
+    readWorkingPathStatus: "",
+    parsersContetn : [],
+    parserFolderContent : []
   },
   getters: {
     files: state => {
         return state.workingPathContent.filter(item => item.isFile)
 
     },
+    parserFiles: state => {
+      return state.parserFolderContent.filter(item => item.isFile)
+
+    },
     folders: state => {
       return state.workingPathContent.filter(item => item.isFolder)
-  }
+    }
   },
   mutations: {
     workingPath (state,data) {
@@ -30,6 +59,9 @@ export default new Vuex.Store({
     },
     setworkingPathContent (state,data) {
       state.workingPathContent = data.value;
+    },
+    setParserContent (state,data) {
+      state.parserFolderContent = data.value;
     },
     setreadWorkingPathStatus (state,data) {
       state.readWorkingPathStatus = data.value;
@@ -44,19 +76,17 @@ export default new Vuex.Store({
       context.commit("setreadWorkingPathStatus",{value:"Reading"})
 
       try{
-        let workingPathContent =  await fs.readdir( context.state.workingPath,{withFileTypes :true})
-        workingPathContent = workingPathContent.map(d => {
-          let cur = { name: d.name }
-          for (let method of fsDetailsMethods) cur[method] = d[method]()
-          return cur
-        })
-
+        let workingPathContent =  await readFolderContents(`${context.state.workingPath}`)
 
 
         context.commit("setreadWorkingPathStatus",{value:"Done"})
+        let Stat = await fileStat(workingPathContent,context.state.workingPath)
+        context.commit("setworkingPathContent",{value:Stat})
 
-        //
-        context.dispatch("basicFileStats",{value:workingPathContent})
+        let parserContetn = await readFolderContents(`${context.state.workingPath}parsers`)
+        debugger
+        let parserStat = await fileStat(parserContetn,`${context.state.workingPath}parsers`)
+        context.commit('setParserContent',{value:parserStat})
       }catch(e){
         console.log(e)
         context.commit("setworkingPathContent",{value:[]})
@@ -65,20 +95,18 @@ export default new Vuex.Store({
       }
 
     },
+
+    async processModelContent (context) {
+
+
+    },
     async readAppdats (context) {
 
 
     },
     async basicFileStats (context,data) {
 
-      for(let file of data.value)
-      {
-        if(file.isFile){
-          file.hash = await md5File(`${context.state.workingPath}/${file.name}`)
-          file.size = (await (await fs.stat(`${context.state.workingPath}/${file.name}`)).size / (1024*1024)).toFixed(3)
-        }
-      }
-      context.commit("setworkingPathContent",data)
+
 
 
 
