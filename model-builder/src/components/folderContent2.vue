@@ -17,7 +17,7 @@
           <td >{{file.name}}</td>
           <td >{{file.size}} Mb</td>
           <td >{{file.hash}}</td>
-          <td> <button type="button" class="btn btn-primary" @click="$emit(index)">New Model</button> </td>
+          <td> <button type="button" class="btn btn-primary" @click="loadParser(index)">New Model</button> </td>
         </tr>
 
       </tbody>
@@ -54,9 +54,9 @@ export default {
 
   },
   methods:{
-    loadFile : function(index){
+    loadParser : function(index){
 
-      this.$router.push({ path: `newSanitise/${index}` })
+      this.$router.push({ path: `newModel/${index}` })
 
     }
 

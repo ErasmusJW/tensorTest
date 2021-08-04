@@ -51,8 +51,8 @@
                   <td @click="print(item.stats.values)"> <button type="button" class="btn btn-link">{{ Object.keys(item.stats.values).length }}</button>  </td>
                 </template>
                 <td>
-                   <button class="btn btn-outline-primary btn-sm" @click="showselectInput(index)">Select Input </button>
-                   <button class="btn btn-outline-warning btn-sm" @click="showselectOutput(index)">Select Output </button>
+                   <button class="btn btn-outline-primary btn-sm" @click="showselectValue(index,'input')">Select Input </button>
+                   <button class="btn btn-outline-warning btn-sm" @click="showselectValue(index,'output')">Select Output </button>
                 </td>
               </tr>
 
@@ -100,7 +100,6 @@
                 </template>
                 <td>
                    <button class="btn btn-outline-primary btn-sm" @click="removeInput(index)">Remove Input </button>
-                   <button class="btn btn-outline-warning btn-sm" @click="showselectOutput(index)">Edit Input </button>
                 </td>
               </tr>
 
@@ -124,16 +123,31 @@
             <thead>
               <tr>
                 <th scope="col">Field Name</th>
-                <th> Actions </th>
+                <th scope="col">Type </th>
+                <th scope="col">Normal Min</th>
+                <th scope="col">Nomrmal Max</th>
+                <th scope="col">Discrete or Normalise</th>
+                <th scope="col">Actions</th>
 
               </tr>
             </thead>
             <tbody>
               <tr v-for="(item, index) in outputs" >
                 <td scope="row" > {{ index }}</td>
-
+                <template v-if="item.isNumber">
+                  <td>Number</td>
+                  <td>{{item.normalise.min}}</td>
+                  <td>{{item.normalise.max}}</td>
+                  <td class="grey-back"></td>
+                </template>
+                <template v-else>
+                  <td>Sring</td>
+                  <td class="grey-back"></td>
+                  <td class="grey-back"></td>
+                  <td>  {{ item.normalise.stringType }} </td>
+                </template>
                 <td>
-                   <button class="btn btn-outline-primary btn-sm" @click="removeOutput(index)">Remove Output </button>
+                   <button class="btn btn-outline-primary btn-sm" @click="removeOutput(index)">Remove Outputs </button>
                 </td>
               </tr>
 
@@ -157,8 +171,8 @@
     <div class="modal fade" id="createInput" tabindex="-1" >
       <div class="modal-dialog modal-xl">
         <div class="modal-content">
-          <div class="modal-body" v-if="showInput">
-            <config-input v-bind:meta="inputBeingSelected" v-on:cancel="cancelAddInput()" v-on:save="saveInput"> </config-input>
+          <div class="modal-body" v-if="showModal">
+            <config-input v-bind:meta="valueBeingAdded" v-on:cancel="cancelAddValue()" v-on:save="saveValue"> </config-input>
           </div>
         </div>
       </div>
@@ -230,17 +244,17 @@ export default {
       inputs : {},
       outputs : {},
       myModal : null,
-      showInput : false,
-      inputBeingSelected : null,
+      showModal : false,
+      valueBeingAdded : null,
       parserName: "Some name"
 
     }
 
   },
   methods:{
-    showselectInput : function(metaIndex){
-      this.inputBeingSelected = this.meta[metaIndex];
-      this.showInput = true;
+    showselectValue : function(metaIndex,type){
+      this.valueBeingAdded = this.meta[metaIndex];
+      this.showModal = type;
 
       this.myModal.show()
 
@@ -253,22 +267,23 @@ export default {
 
 
     },
-    cancelAddInput : function(){
+    cancelAddValue : function(){
       this.myModal.hide()
-      this.showInput = false;
-      this.inputBeingSelected = null;
+      this.showModal = false;
+      this.valueBeingAdded = null;
 
     },
-    saveInput : function(normalise){
+    saveValue : function(normalise){
 
-      let temp = this.inputBeingSelected ;
+      let temp = this.valueBeingAdded ;
       temp.normalise = normalise
-      this.inputs[temp.name] = temp
+      let removeFrom = (this.showModal === 'input') ? this.inputs : this.outputs
+      removeFrom[temp.name] = temp
       delete this.selectable[temp.name];
 
       this.myModal.hide()
-      this.showInput = false;
-      this.inputBeingSelected = null;
+      this.showModal = false;
+      this.valueBeingAdded = null;
 
     },
     print : function(data){

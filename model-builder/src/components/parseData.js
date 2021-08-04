@@ -117,32 +117,32 @@ class StringNormaliser{
 
 }
 
-class OutputNormaliser{
-    constructor(parseRules,data){
-        this.parseRules = parseRules;
-        this.i = 0;
-        this.data = data;
+// class OutputNormaliser{
+//     constructor(parseRules,data){
+//         this.parseRules = parseRules;
+//         this.i = 0;
+//         this.data = data;
 
-    }
-    getHeader(){
-        return [this.parseRules.name]
-    }
-    getNextValue(){
-        if(this.i > this.data.length)
-         return [false];
-        let nextValue = this.data[this.i]
-        ++this.i
-        return [[true,[nextValue]],[nextValue]]
+//     }
+//     getHeader(){
+//         return [this.parseRules.name]
+//     }
+//     getNextValue(){
+//         if(this.i > this.data.length)
+//          return [false];
+//         let nextValue = this.data[this.i]
+//         ++this.i
+//         return [[true,[nextValue]],[nextValue]]
 
-    }
-    deNormaliseFunc(value){
-        return [true,value]
+//     }
+//     deNormaliseFunc(value){
+//         return [true,value]
 
-    }
+//     }
 
 
 
-}
+// }
 
 
 async function ensureFolder(path) {
@@ -195,6 +195,17 @@ class parseData extends EventEmitter {
     }
     async saveParser(){
         await ensureFolder(`${this.path}${parserFolder}`)
+        let counter = 0;
+        for(let item in this.parserObject.inputs)
+        {
+            this.parserObject.inputs[item].index = counter;
+            counter++;
+        }
+        for(let item in this.parserObject.outputs)
+        {
+            this.parserObject.outputs[item].index = counter;
+            counter++;
+        }
         await fs.writeFile(`${this.path}${parserFolder}/${this.name}.json`, JSON.stringify(this.parserObject,null,2), 'utf8');
     }
     async normaliseData(){
@@ -217,7 +228,12 @@ class parseData extends EventEmitter {
         for(let item in this.outputs)
         {
             let parseObject = this.outputs[item]
-            parsers.push(new OutputNormaliser(parseObject,this.data[item]))
+            if(parseObject.isNumber)
+            {
+                parsers.push(new NumberNormaliser(parseObject,this.data[item]))
+            }else{
+                parsers.push(new StringNormaliser(parseObject,this.data[item]))
+            }
         }
         let writeStream = fsNormal.createWriteStream(`${this.path}${normaliseDataFolder}/${this.name}.csv`,{flags : 'w'});
         //let UnNormalisedTestStream = fsNormal.createWriteStream(`${this.path}${normaliseDataFolder}/unNormal.csv`,{flags : 'w'});

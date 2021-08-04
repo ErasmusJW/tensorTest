@@ -101,7 +101,7 @@ async function loadData({filePath = path.join(__dirname,'/data/fudgeNumbers.csv'
 
 
   const numOfFeatures = (await trainingData.columnNames()).length - outputs.length;
-  console.log(numOfFeatures)
+
 
   const model = tf.sequential();
   model.add(tf.layers.dense({inputShape: [numOfFeatures], units: 1}))

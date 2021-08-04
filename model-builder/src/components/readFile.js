@@ -38,8 +38,6 @@ class readFile extends EventEmitter {
                 {
                     this.data[heading] = []
                 }
-                console.log("headings",this.headings)
-                console.log("data",this.data)
 
             }
             if(this.lineNr === 1)

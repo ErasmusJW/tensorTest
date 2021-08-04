@@ -48,12 +48,11 @@ export default {
           properties: ['openDirectory'],
           defaultPath: this.path
       })
-      console.log("New path from coponent",path)
+
       this.$emit('new-path',path.filePaths[0])
 
     },
     setInput : function(value){
-      console.log(value);
       this.$emit('new-path',value)
     }
   }

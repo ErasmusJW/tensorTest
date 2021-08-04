@@ -84,7 +84,7 @@ export default new Vuex.Store({
         context.commit("setworkingPathContent",{value:Stat})
 
         let parserContetn = await readFolderContents(`${context.state.workingPath}parsers`)
-        debugger
+
         let parserStat = await fileStat(parserContetn,`${context.state.workingPath}parsers`)
         context.commit('setParserContent',{value:parserStat})
       }catch(e){

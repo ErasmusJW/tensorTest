@@ -15,6 +15,12 @@
 
     </folder-content-parser>
 
+    <h3> Models </h3>
+    <hr>
+      <button>predict</button>
+    <hr>
+
+
 
     <button @click="updatePath(workingPath)" class="btn btn-primary">Refresh</button>
   </div>
@@ -43,8 +49,8 @@ export default {
   },
   created: function () {
     // `this` points to the vm instance
-    console.log('a is: ' + this.workingPath)
-          this.$store.dispatch("setWorkingPath",{value:this.workingPath})
+
+    this.$store.dispatch("setWorkingPath",{value:this.workingPath})
 
   },
   data: function(){
