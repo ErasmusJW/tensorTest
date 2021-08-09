@@ -50,7 +50,7 @@ async function ensureFolder(path) {
 
 export default new Vuex.Store({
   state: {
-    workingPath : process.env.workingPath || "/home/jac/tensorTest/data/",
+    workingPath : process.env.workingPath || "/home/zeppelin/tensorTest/data/",
     workingPathContent: [],
     readWorkingPathStatus: "",
     parsersContetn : [],

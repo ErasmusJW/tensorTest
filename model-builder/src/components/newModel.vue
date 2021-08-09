@@ -198,7 +198,7 @@ import fs from "fs/promises"
 import configInput from './configInput.vue';
 import parseData from './parseData'
 
-import * as tf from '@tensorflow/tfjs-node'
+import * as tf from '@tensorflow/tfjs-node-gpu'
 
 
 

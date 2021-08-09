@@ -6,8 +6,11 @@
   <p>modelId {{modelId}}</p>
   <p>workingPath {{workingPath}}</p>
   <p>modelPath {{this.modelPath}} </p>
-
+  
   <button class="btn btn-primary" @click="trainAllData()"> Train with all data in data folder </button>
+  <button class="btn btn-primary" @click="saveModel()"> saveModel </button>
+  <p> Epoch <input type="number" v-model="epoch"> </p>
+  <p> batches <input type="number" v-model="batches"> </p>
 </div>
 
 </template>
@@ -20,7 +23,7 @@ import { mapGetters, mapState } from 'vuex';
 import fs from "fs/promises"
 import configInput from './configInput.vue';
 
-import * as tf from '@tensorflow/tfjs-node'
+import * as tf from '@tensorflow/tfjs-node-gpu'
 
 
 
@@ -78,6 +81,8 @@ export default {
       parserName : "",
       parserConfig : {},
       columnConfigs : {},
+      epoch : 10,
+      batches : 200
 
     }
 
@@ -86,27 +91,11 @@ export default {
 
     makeModel : async function(path){
 
-      const tfModel = tf.sequential();
-      tfModel.add(tf.layers.dense({
-        inputShape: [this.model.inputLayer.inputShape],
-        units: parseInt(this.model.inputLayer.units),
-        activation : this.model.inputLayer.activation,
-        }))
-      for(let layer of this.model.hidenLayers){
 
-        tfModel.add(tf.layers.dense({
-          units: parseInt(layer.units),
-          activation : layer.activation,
-        }))
-      }
-      tfModel.add(tf.layers.dense({
-        units: parseInt(this.model.outputLayer.units)
-        }))
-      tfModel.summary();
-      await tfModel.save(`file:///${path}`);
+
     },
     saveModel : async function(){
-
+      await model.save(`file:///${this.modelPath}/`);
     },
     trainAllData : async function() {
 
@@ -168,13 +157,13 @@ export default {
 
             return {xs:Object.values(xs), ys:Object.values(ys)};
           })
-        .batch(300);
+        .batch(this.batches);
 
         trainingData.push(flattenedDataset)
 
 
         let info = await model.fitDataset(flattenedDataset,
-          {epochs:10,
+          {epochs:parseInt(this.epoch),
           callbacks:{
               onEpochEnd: async(epoch, logs) =>{
                   console.log("Epoch: " + epoch )
@@ -187,7 +176,7 @@ export default {
 
 
       }
-      debugger
+      
     // trainingData =
     // }
     }

@@ -184,7 +184,12 @@ async function loadData({filePath = path.join(__dirname,'/data/fudgeNumbers.csv'
   // const ys = tf.tensor2d([20, 0, 40, 60, 80, 100,160], [7, 1]);
 
   // Train the model using the data.
-  await model.fit(xs, ys, {epochs: 200});
+  await model.fit(xs, ys,     {epochs:10,
+    callbacks:{
+        onEpochEnd: async(epoch, logs) =>{
+            console.log("Epoch: " + epoch + " Loss: " + logs);
+        }
+    }});
   console.log(model.predict(tf.tensor2d([0.7], [1, 1])).dataSync());
 })()
 const materialType = {
