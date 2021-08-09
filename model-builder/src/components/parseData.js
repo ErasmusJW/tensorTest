@@ -5,7 +5,7 @@ import es from 'event-stream'
 
 
 
-const parserFolder = "parsers"
+const parserFolder = "internal"
 const normaliseDataFolder = 'normalisedData'
 
 class NumberNormaliser{
@@ -65,7 +65,6 @@ class StringNormaliser{
         let index = Math.round(value * this.validValues.length)
         if(index>this.validValues.length || index < 0)
         {
-            debugger;
             return [false]
 
         }
@@ -195,6 +194,7 @@ class parseData extends EventEmitter {
     }
     async saveParser(){
         await ensureFolder(`${this.path}${parserFolder}`)
+        await ensureFolder(`${this.path}${parserFolder}/${this.name}`)
         let counter = 0;
         for(let item in this.parserObject.inputs)
         {
@@ -209,6 +209,7 @@ class parseData extends EventEmitter {
         await fs.writeFile(`${this.path}${parserFolder}/${this.name}.json`, JSON.stringify(this.parserObject,null,2), 'utf8');
     }
     async normaliseData(){
+        await ensureFolder(`${this.path}${parserFolder}/${this.name}/data`)
         let validCount = 0;
         let invalidCount = 0;
         let numberElements = 0;
@@ -235,7 +236,7 @@ class parseData extends EventEmitter {
                 parsers.push(new StringNormaliser(parseObject,this.data[item]))
             }
         }
-        let writeStream = fsNormal.createWriteStream(`${this.path}${normaliseDataFolder}/${this.name}.csv`,{flags : 'w'});
+        let writeStream = fsNormal.createWriteStream(`${this.path}${parserFolder}/${this.name}/data/${this.name}.csv`,{flags : 'w'});
         //let UnNormalisedTestStream = fsNormal.createWriteStream(`${this.path}${normaliseDataFolder}/unNormal.csv`,{flags : 'w'});
         let headers = [];
         for(let parser of parsers)

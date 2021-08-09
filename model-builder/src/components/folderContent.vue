@@ -17,7 +17,7 @@
           <td >{{file.name}}</td>
           <td >{{file.size}} Mb</td>
           <td >{{file.hash}}</td>
-          <td> <button type="button" class="btn btn-primary" @click="loadFile(index)">Select</button> </td>
+          <td> <button type="button" class="btn btn-primary" @click="loadFile(index)">Select as basis for parser</button> </td>
         </tr>
 
       </tbody>

@@ -15,10 +15,7 @@
 
     </folder-content-parser>
 
-    <h3> Models </h3>
-    <hr>
-      <button>predict</button>
-    <hr>
+
 
 
 

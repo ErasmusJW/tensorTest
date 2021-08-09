@@ -1,0 +1,16 @@
+{
+  "name": "tons",
+  "complete": false,
+  "inputLayer": {
+    "inputShape": 1,
+    "units": 1,
+    "activation": "relu"
+  },
+  "outputLayer": {
+    "units": 1
+  },
+  "hidenLayers": [],
+  "optimizer": "sgd",
+  "loss": "meanSquaredError",
+  "metrics": "accuracy"
+}

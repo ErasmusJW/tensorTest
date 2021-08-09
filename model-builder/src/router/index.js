@@ -3,6 +3,7 @@ import VueRouter from 'vue-router'
 import home from "../components/home.vue"
 import newSanitise from "../components/newSanitise.vue"
 import newModel from "../components/newModel.vue"
+import useModel from "../components/useModel.vue"
 
 Vue.use(VueRouter)
 
@@ -27,6 +28,14 @@ const routes = [
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
     component: newModel
+  },
+  {
+    path: '/useModel/:parserId/:modelId',
+    name: 'useModel',
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: useModel
   }
 
 ]

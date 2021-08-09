@@ -302,6 +302,7 @@ export default {
        delete this.outputs[index]
       this.$forceUpdate()
     },
+
     saveParser : async function(){
       this.status = "Saving Parser"
       if(Object.keys(this.inputs).length == 0 || Object.keys(this.outputs).length ==  0)

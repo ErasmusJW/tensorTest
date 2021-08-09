@@ -9,15 +9,21 @@
           <th scope="col">Size</th>
           <th scope="col">Hash</th>
           <th scope="col">Actions</th>
+          <th scope="col">Models</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(file,index) in parserFiles">
+        <tr v-for="(file,index) in files">
           <th scope="row">{{index}}</th>
-          <td >{{file.name}}</td>
+          <td >{{file.baseName}}</td>
           <td >{{file.size}} Mb</td>
           <td >{{file.hash}}</td>
-          <td> <button type="button" class="btn btn-primary" @click="loadParser(index)">New Model</button> </td>
+          <td> <button type="button" class="btn btn-primary" @click="loadParser(index)">Add Model</button> </td>
+          <td v-if="models[file.baseName]">
+            <button v-for="model in models[file.baseName]" @click="useModel(index,model)">
+                {{model}}
+            </button>
+          </td>
         </tr>
 
       </tbody>
@@ -31,7 +37,7 @@
 /* eslint-disable */
 const {dialog} = require('electron').remote;
 
-import { mapGetters } from 'vuex';
+import { mapGetters, mapState } from 'vuex';
 import readline from 'readline';
 import fs from "fs/promises"
 
@@ -45,7 +51,8 @@ export default {
 
   },
   created: function () {
-
+      console.log("parserFolders",this.parserFolders)
+      console.log("models",this.models.Test1)
   },
   data: function(){
     return {
@@ -58,12 +65,25 @@ export default {
 
       this.$router.push({ path: `newModel/${index}` })
 
+    },
+    useModel : function(index,modelName){
+      this.$router.push({ path: `useModel/${index}/${modelName}` })
     }
 
   },
-  computed: mapGetters([
-        'parserFiles'
-    ])
+  computed: {
+    ...mapGetters([
+        'parserFiles',
+        'parserFolders'
+    ]),
+    ...mapState(["models"]),
+    files : function(){
+      return this.parserFiles.map((val)=>{
+        val.baseName = val.name.substring(0,val.name.indexOf(".json"))
+        return val
+      })
+    }
+  }
 
 
 

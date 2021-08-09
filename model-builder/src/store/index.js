@@ -31,13 +31,31 @@ async function fileStat(data,path)
   return data;
 }
 
+async function ensureFolder(path) {
+
+  try{
+      let doesExists = (await fs.stat(path)).isDirectory()
+
+     if(!doesExists)
+         await fs.mkdir(path)
+
+
+ }catch(e)
+ {
+     await fs.mkdir(path)
+ }
+}
+
+
+
 export default new Vuex.Store({
   state: {
     workingPath : process.env.workingPath || "/home/jac/tensorTest/data/",
     workingPathContent: [],
     readWorkingPathStatus: "",
     parsersContetn : [],
-    parserFolderContent : []
+    parserFolderContent : [],
+    models : {}
   },
   getters: {
     files: state => {
@@ -46,6 +64,10 @@ export default new Vuex.Store({
     },
     parserFiles: state => {
       return state.parserFolderContent.filter(item => item.isFile)
+
+    },
+    parserFolders: state => {
+      return state.parserFolderContent.filter(item => !item.isFile)
 
     },
     folders: state => {
@@ -65,6 +87,10 @@ export default new Vuex.Store({
     },
     setreadWorkingPathStatus (state,data) {
       state.readWorkingPathStatus = data.value;
+    },
+    setModels (state,data) {
+      state.models = data.value;
+
     }
   },
   actions: {
@@ -82,11 +108,35 @@ export default new Vuex.Store({
         context.commit("setreadWorkingPathStatus",{value:"Done"})
         let Stat = await fileStat(workingPathContent,context.state.workingPath)
         context.commit("setworkingPathContent",{value:Stat})
+        await ensureFolder(`${context.state.workingPath}internal`)
+        let parserContetn = await readFolderContents(`${context.state.workingPath}internal`)
 
-        let parserContetn = await readFolderContents(`${context.state.workingPath}parsers`)
-
-        let parserStat = await fileStat(parserContetn,`${context.state.workingPath}parsers`)
+        let parserStat = await fileStat(parserContetn,`${context.state.workingPath}internal`)
         context.commit('setParserContent',{value:parserStat})
+        let models = {}
+
+        for(let file of context.getters.parserFolders)
+        {
+          let fileContent = await readFolderContents(`${context.state.workingPath}internal/${file.name}`)
+          let filestat = await fileStat(fileContent,`${context.state.workingPath}internal/${file.name}`)
+          let modelsFolder = filestat.filter((val)=>{
+            return val.name == "models" && !val.isFile
+          })
+          if(modelsFolder.length > 0)
+          {
+            let fileContent = await readFolderContents(`${context.state.workingPath}internal/${file.name}/models`)
+            let filestat = await fileStat(fileContent,`${context.state.workingPath}internal/${file.name}/models`)
+            let allModels = filestat.reduce((accum,currentVal)=>{
+              if(! currentVal.isFile)
+                return [currentVal.name,...accum]
+              else
+                return [...accum]
+            },[])
+            if(allModels.length > 0)
+              models[file.name] = allModels
+          }
+          context.commit("setModels",{value:models})
+        }
       }catch(e){
         console.log(e)
         context.commit("setworkingPathContent",{value:[]})
