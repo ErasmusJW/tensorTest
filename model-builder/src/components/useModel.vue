@@ -8,6 +8,8 @@
   <p>modelPath {{this.modelPath}} </p>
   
   <button class="btn btn-primary" @click="trainAllData()"> Train with all data in data folder </button>
+    <button class="btn btn-primary" @click="trainAllDataForever()"> Train with all data in data folder FOREVER</button>
+    <button class="btn btn-primary" @click="predictAllData()"> Predict All Data </button>
   <button class="btn btn-primary" @click="saveModel()"> saveModel </button>
   <p> Epoch <input type="number" v-model="epoch"> </p>
   <p> batches <input type="number" v-model="batches"> </p>
@@ -24,6 +26,7 @@ import fs from "fs/promises"
 import configInput from './configInput.vue';
 
 import * as tf from '@tensorflow/tfjs-node-gpu'
+import denormalise from './deNormalise'
 
 
 
@@ -89,7 +92,11 @@ export default {
   },
   methods:{
 
-    makeModel : async function(path){
+    predictAllData : async function(){
+
+      const denormaliser = new denormalise(`${this.workingPath}internal/${this.parserName}`,this.parserConfig,model)
+      denormaliser.denormaliseData()
+
 
 
 
@@ -179,6 +186,89 @@ export default {
       
     // trainingData =
     // }
+    },
+    trainAllDataForever : async function(){
+
+      for(const val in this.parserConfig.inputs)
+      {
+
+        if(this.parserConfig.inputs[val].normalise.stringType === "discrete")
+        {
+          for(const discreteVal in this.parserConfig.inputs[val].stats.values)
+          {
+            this.columnConfigs[discreteVal] = {
+              isLabel:false
+            }
+          }
+        }else{
+          this.columnConfigs[val] = {
+            isLabel:false
+          }
+        }
+      }
+      for(const val in this.parserConfig.outputs)
+      {
+        if(this.parserConfig.outputs[val].normalise.stringType === 'discrete')
+        {
+          for(const discreteVal in this.parserConfig.outputs[val].stats.values)
+          {
+            this.columnConfigs[discreteVal] = {
+              isLabel:true
+            }
+          }
+        }else{
+          this.columnConfigs[val] = {
+            isLabel:true
+          }
+        }
+      }
+      let dataContent =  (await readFolderContents(`${this.workingPath}internal/${this.parserName}/data`)).filter((elem)=>elem.isFile)
+      while(1){
+        for(let elem of dataContent)
+        {
+          const data =
+              tf.data.csv(`file://${this.workingPath}internal/${this.parserName}/data/${elem.name}`, {
+              columnConfigs: {...this.columnConfigs},
+              hasHeader : true,
+              configuredColumnsOnly : true
+            })
+
+          const flattenedDataset =
+          data
+          .map(({xs, ys}) =>
+            {
+              // Convert xs(features) and ys(labels) from object form (keyed by
+              // column name) to array form.
+              // xs.Truck = truckToLoad[xs.Truck]
+              // xs.MaterialType = materialType[xs.MaterialType]
+              // const returnobject = {xs:Object.values(xs), ys:Object.values(ys)};
+
+              return {xs:Object.values(xs), ys:Object.values(ys)};
+            })
+          .batch(this.batches);
+
+          trainingData.push(flattenedDataset)
+
+
+          let info = await model.fitDataset(flattenedDataset,
+            {epochs:2,
+            callbacks:{
+                onEpochEnd: async(epoch, logs) =>{
+                    console.log("Epoch: " + epoch )
+                    console.log("logs" ,JSON.stringify(logs,null,2))
+                }
+            }});
+            console.log("Fit done")
+
+          console.log(info.history.acc)
+          await this.saveModel()
+
+
+        }
+
+        }
+
+
     }
 
   },
